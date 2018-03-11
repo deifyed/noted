@@ -1,6 +1,10 @@
 package net.develish.noted.noted;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,11 +31,16 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
+    private PorterDuffColorFilter SELECTION_FILTER;
+
     private List<Note> mDataset;
 
     NoteAdapter(Activity activity, List<Note> dataset) {
         mActivity = activity;
         mInflater = LayoutInflater.from(mActivity);
+
+        SELECTION_FILTER = new PorterDuffColorFilter(Color.parseColor("#EEEEEE"),
+                                                     PorterDuff.Mode.MULTIPLY);
 
         mDataset = dataset;
     }
@@ -47,13 +56,14 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         Note current = mDataset.get(position);
 
+        holder.itemView.getBackground().clearColorFilter();
         holder.lblTitle.setText(current.getTitle());
         holder.lblChanged.setText(prettifyNow(current.last_change));
         holder.imgAvatar.setImageResource(R.mipmap.ic_launcher_round);
 
         if(OpenNoteActivity.inActionMode) {
             if(OpenNoteActivity.selectionList.contains(mDataset.get(position))) {
-                holder.imgAvatar.setImageResource(R.drawable.ic_check_black_24dp);
+                holder.itemView.getBackground().setColorFilter(SELECTION_FILTER);
             }
 
         }
