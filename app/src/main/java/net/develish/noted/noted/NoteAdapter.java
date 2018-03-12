@@ -58,7 +58,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
         holder.itemView.getBackground().clearColorFilter();
         holder.lblTitle.setText(current.getTitle());
-        holder.lblChanged.setText(prettifyNow(current.last_change));
+        holder.lblChanged.setText(prettifyDate(current.last_change));
         holder.imgAvatar.setImageResource(R.mipmap.ic_launcher_round);
 
         if(OpenNoteActivity.inActionMode) {
@@ -119,34 +119,52 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         this.mClickListener = itemClickListener;
     }
 
-    private String prettifyNow(String now) {
-        String result = now;
+    private String prettifyDate(String then) {
+        String result = then;
         Locale lc = Locale.US;
 
         try {
-            Date parsed = DatabaseManager.DATE_FORMATTER.parse(now);
-            Calendar c = new GregorianCalendar();
-            c.setTime(parsed);
+            Date parsed = DatabaseManager.DATE_FORMATTER.parse(then);
+            Calendar c_then = new GregorianCalendar();
+            c_then.setTime(parsed);
 
-            String month = c.getDisplayName(Calendar.MONTH, Calendar.SHORT, lc);
-            int day = c.get(Calendar.DAY_OF_MONTH);
+            Calendar c_now = new GregorianCalendar();
+            c_now.setTime(new Date());
 
-            String hours = Integer.toString(c.get(Calendar.HOUR_OF_DAY));
+            String month_then = c_then.getDisplayName(Calendar.MONTH, Calendar.LONG, lc);
+            String month_now = c_now.getDisplayName(Calendar.MONTH, Calendar.LONG, lc);
+            int day_then = c_then.get(Calendar.DAY_OF_MONTH);
+            int day_now = c_now.get(Calendar.DAY_OF_MONTH);
+
+            String hours = Integer.toString(c_then.get(Calendar.HOUR_OF_DAY));
             if(hours.length() == 1)
                 hours = "0" + hours;
 
-            String minutes = Integer.toString(c.get(Calendar.MINUTE));
+            String minutes = Integer.toString(c_then.get(Calendar.MINUTE));
             if(minutes.length() == 1)
                 minutes = "0" + minutes;
 
-
-            result = String.format(lc, "%d %s, %s:%s", day, month, hours, minutes);
+            if(month_now.equals(month_then) && day_now == day_then)
+                result = String.format(lc, "%s:%s", hours, minutes);
+            else
+                result = String.format(lc, "%d%s of %s", day_then, getDayOfMonthSuffix(day_then),
+                                       month_then);
         }
         catch (ParseException e) {
 
         }
 
-        return result;
+        return "Modified: " + result;
+    }
+    private String getDayOfMonthSuffix(final int n) {
+        if(n >= 11 && n <= 13)
+            return "th";
+        switch(n % 10) {
+            case 1: return "st";
+            case 2: return "nd";
+            case 3: return "rd";
+            default: return "th";
+        }
     }
 
     public interface ItemClickListener {
