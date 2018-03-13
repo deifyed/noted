@@ -1,13 +1,10 @@
-package net.develish.noted.noted.net.develish.db;
+package net.develish.noted.noted;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
-import net.develish.noted.noted.Note;
-import net.develish.noted.noted.Tag;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,9 +19,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static DatabaseManager mInstance = null;
     private static final int VERSION = 1;
     private static final String NAME = "notes.db";
-    public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-    public static DatabaseManager getInstance(Context context) {
+    static DatabaseManager getInstance(Context context) {
         if(mInstance == null)
             mInstance = new DatabaseManager(context);
 
@@ -38,19 +35,15 @@ public class DatabaseManager extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(Note.db.TABLE_CREATE);
-        sqLiteDatabase.execSQL(Tag.db.TABLE_CREATE);
-        sqLiteDatabase.execSQL(NoteTag.db.TABLE_CREATE);
     }
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         sqLiteDatabase.execSQL(Note.db.TABLE_DELETE);
-        sqLiteDatabase.execSQL(Tag.db.TABLE_DELETE);
-        sqLiteDatabase.execSQL(NoteTag.db.TABLE_DELETE);
 
         onCreate(sqLiteDatabase);
     }
 
-    public void saveNote(Note note) {
+    void saveNote(Note note) {
         SQLiteDatabase wdb = getWritableDatabase();
 
         if(!updateNote(wdb, note))
@@ -59,7 +52,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         wdb.close();
     }
 
-    public Note getNote(String uuid) {
+    Note getNote(String uuid) {
         SQLiteDatabase db = getReadableDatabase();
 
         String[] projection = new String[] { Note.db.column._ID, Note.db.column.TITLE };
@@ -81,7 +74,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
         return result;
     }
-    public List<Note> getAllNotes() {
+    List<Note> getAllNotes() {
         SQLiteDatabase db = getReadableDatabase();
 
         String[] projection = new String[] { Note.db.column._ID, Note.db.column.UUID,
@@ -149,7 +142,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return affected == 1;
     }
 
-    public boolean deleteNote(Note note) {
+    boolean deleteNote(Note note) {
         SQLiteDatabase db = getWritableDatabase();
 
         boolean result = deleteNote(db, note);

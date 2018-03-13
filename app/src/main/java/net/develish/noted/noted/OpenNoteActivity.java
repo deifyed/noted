@@ -29,12 +29,11 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
     static final String EXTRA_UUID = "nuuid";
 
     private SharedPreferences mPrefs;
-    private NoteAdapter mAdapter;
+    private NoteAdapter mNoteAdapter;
 
     private Toolbar cabSelection;
 
     private List<Note> current_notes;
-    private List<Tag> current_tags;
 
     // Action mode
     public static boolean inActionMode = false;
@@ -43,29 +42,8 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_open_note);
-        cabSelection = (Toolbar) findViewById(R.id.cabSelection);
-        setSupportActionBar(cabSelection);
 
-        getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
-
-        RecyclerView recyclerNotes = findViewById(R.id.recyclerNotes);
-        recyclerNotes.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        recyclerNotes.setLayoutManager(new GridLayoutManager(this, 1));
-
-        current_notes = new ArrayList<>();
-        mAdapter = new NoteAdapter(this, current_notes);
-        mAdapter.setClickListener(this);
-
-        recyclerNotes.setAdapter(mAdapter);
-
-        FloatingActionButton fabNew = findViewById(R.id.fabNew);
-        fabNew.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openNote(null);
-            }
-        });
+        initializeUI();
 
         mPrefs = getSharedPreferences(DEFAULT_PREFS, Context.MODE_PRIVATE);
         openNote(mPrefs.getString(EXTRA_UUID, null));
@@ -77,49 +55,6 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
 
         return true;
     }
-    @Override
-    public void onBackPressed() {
-        if(inActionMode) {
-            clearActionMode();
-
-            mAdapter.notifyDataSetChanged();
-        }
-        else
-            super.onBackPressed();
-    }
-
-    public void prepareToolbar(int position) {
-        cabSelection.getMenu().clear();
-        cabSelection.inflateMenu(R.menu.menu_action_mode);
-
-        inActionMode = true;
-
-        mAdapter.notifyDataSetChanged();
-
-        if(getSupportActionBar() != null)
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        prepareSelection(position);
-    }
-    public void prepareSelection(int position) {
-        Note selected = current_notes.get(position);
-
-        if(!selectionList.contains(selected))
-            selectionList.add(selected);
-        else
-            selectionList.remove(selected);
-
-        if(selectionList.size() > 0)
-            updateViewCounter();
-        else
-            clearActionMode();
-    }
-    private void updateViewCounter() {
-        int counter = selectionList.size();
-
-        cabSelection.setTitle(counter + " item(s) selected");
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
@@ -135,7 +70,7 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
                     current_notes.remove(note);
                 }
 
-                mAdapter.notifyDataSetChanged();
+                mNoteAdapter.notifyDataSetChanged();
                 clearActionMode();
 
                 return true;
@@ -143,7 +78,109 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
                 return false;
         }
     }
+    @Override
+    public void onBackPressed() {
+        if(inActionMode) {
+            clearActionMode();
+
+            mNoteAdapter.notifyDataSetChanged();
+        }
+        else
+            super.onBackPressed();
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == REQUEST_EDIT && resultCode == RESULT_OK) {
+            current_notes.clear();
+
+            current_notes.addAll(Note.getAllNotes(this));
+
+            mNoteAdapter.notifyDataSetChanged();
+        }
+    }
+    @Override
+    public void onItemClick(View view, int position) {
+        openNote(current_notes.get(position).uuid);
+    }
+
+    private void initializeUI() {
+        // Sets the layout
+        setContentView(R.layout.activity_open_note);
+
+        // Actionbar
+        cabSelection = (Toolbar) findViewById(R.id.cabSelection);
+        setSupportActionBar(cabSelection);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
+
+        // Note list
+        RecyclerView recyclerNotes = findViewById(R.id.recyclerNotes);
+        recyclerNotes.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        recyclerNotes.setLayoutManager(new GridLayoutManager(this, 1));
+
+        current_notes = new ArrayList<>();
+        mNoteAdapter = new NoteAdapter(this, current_notes);
+        mNoteAdapter.setClickListener(this);
+
+        recyclerNotes.setAdapter(mNoteAdapter);
+
+        // New note FAB
+        FloatingActionButton fabNew = findViewById(R.id.fabNew);
+        fabNew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openNote(null);
+            }
+        });
+    }
+    /*
+        Toolbar / Action mode
+     */
+    public void prepareToolbar(int position) {
+        /*
+            Actives the toolbar action mode. User can now select items and bulk delete them
+         */
+        cabSelection.getMenu().clear();
+        cabSelection.inflateMenu(R.menu.menu_action_mode);
+
+        inActionMode = true;
+
+        mNoteAdapter.notifyDataSetChanged();
+
+        if(getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        prepareSelection(position);
+    }
+    public void prepareSelection(int position) {
+        /*
+            Adds/removes item to/from deletion list
+         */
+        Note selected = current_notes.get(position);
+
+        if(!selectionList.contains(selected))
+            selectionList.add(selected);
+        else
+            selectionList.remove(selected);
+
+        if(selectionList.size() > 0)
+            updateViewCounter();
+        else
+            clearActionMode();
+    }
+    private void updateViewCounter() {
+        /*
+            Updates the selected items counter
+         */
+        int counter = selectionList.size();
+
+        cabSelection.setTitle(counter + " item(s) selected");
+    }
     private void clearActionMode() {
+        /*
+            Disables the action mode / resets toolbar to normal
+         */
         inActionMode = false;
 
         cabSelection.getMenu().clear();
@@ -157,25 +194,10 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
         selectionList.clear();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == REQUEST_EDIT && resultCode == RESULT_OK) {
-            current_notes.clear();
-
-            current_notes.addAll(Note.getAllNotes(this));
-
-            mAdapter.notifyDataSetChanged();
-        }
-    }
-
-    @Override
-    public void onItemClick(View view, int position) {
-        openNote(current_notes.get(position).uuid);
-    }
-
     void openNote(String uuid) {
+        /*
+            Initiates a create/edit note intent
+         */
         Intent intent = new Intent(Intent.ACTION_INSERT_OR_EDIT);
         intent.putExtra(EXTRA_UUID, uuid);
 

@@ -4,19 +4,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.BaseColumns;
 
-import net.develish.noted.noted.net.develish.db.DatabaseManager;
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -63,9 +58,6 @@ public class Note {
         this.title = title;
     }
 
-    public boolean hasChanged() {
-        return changed;
-    }
     void save(Context context, String content) throws IOException {
         /*
             Saving a note.
@@ -102,7 +94,11 @@ public class Note {
         context.deleteFile(this.uuid);
     }
 
-    public void touch() { this.changed = true; }
+    void touch() { this.changed = true; }
+    boolean hasChanged() {
+        return changed;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -121,16 +117,6 @@ public class Note {
             content.append(String.format("%s\n", line));
 
         return (content.length() > 0) ? content.substring(0, content.length() - 1) : "";
-    }
-
-    public List<Tag> getTags() {
-        Matcher matcher = tagPattern.matcher("");
-        List<Tag> tags = new ArrayList<>();
-
-        while(matcher.find())
-            tags.add(new Tag(matcher.group()));
-
-        return tags;
     }
 
     private String extractTitle(String content) {
