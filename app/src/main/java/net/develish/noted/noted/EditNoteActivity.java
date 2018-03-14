@@ -1,8 +1,13 @@
 package net.develish.noted.noted;
 
+import android.content.Intent;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -11,6 +16,8 @@ import java.io.IOException;
 public class EditNoteActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private EditText txtContent;
+
+    ShareActionProvider mShareActionProvider;
 
     Note currentNote;
 
@@ -25,6 +32,25 @@ public class EditNoteActivity extends AppCompatActivity {
         getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
 
         txtContent = findViewById(R.id.txtContent);
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_edit_normal, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.item_share:
+                Intent intent = createShareIntent();
+
+                startActivity(Intent.createChooser(intent, "Share note with"));
+
+                return true;
+            default:
+                return false;
+        }
     }
     @Override
     protected void onResume() {
@@ -74,5 +100,15 @@ public class EditNoteActivity extends AppCompatActivity {
                 Toast.makeText(this, "Error saving file", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private Intent createShareIntent() {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.putExtra(Intent.EXTRA_SUBJECT, currentNote.getTitle());
+        intent.putExtra(Intent.EXTRA_TEXT, txtContent.getText());
+        intent.setType("text/plain");
+
+        return intent;
     }
 }

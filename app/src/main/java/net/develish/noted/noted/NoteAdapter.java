@@ -56,14 +56,10 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         holder.itemView.getBackground().clearColorFilter();
         holder.lblTitle.setText(current.getTitle());
         holder.lblChanged.setText(prettifyDate(current.last_change));
-        holder.imgAvatar.setImageResource(R.mipmap.ic_launcher_round);
 
-        if(OpenNoteActivity.inActionMode) {
-            if(OpenNoteActivity.selectionList.contains(mDataset.get(position))) {
+        if(OpenNoteActivity.inActionMode)
+            if(OpenNoteActivity.selectionList.contains(mDataset.get(position)))
                 holder.itemView.getBackground().setColorFilter(SELECTION_FILTER);
-            }
-
-        }
     }
 
     @Override
@@ -75,14 +71,12 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                                                                        View.OnLongClickListener {
         TextView lblTitle;
         TextView lblChanged;
-        ImageView imgAvatar;
 
         ViewHolder(View itemView) {
             super(itemView);
 
             lblTitle = (TextView) itemView.findViewById(R.id.lblTitle);
             lblChanged = (TextView) itemView.findViewById(R.id.lblChanged);
-            imgAvatar = (ImageView) itemView.findViewById(R.id.imgAvatar);
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
@@ -151,7 +145,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
         }
 
-        return "Modified: " + result;
+        //return "Modified: " + result;
+        return result;
     }
     private String getDayOfMonthSuffix(final int n) {
         if(n >= 11 && n <= 13)

@@ -51,7 +51,7 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_open_normal, menu);
 
         return true;
     }
@@ -148,8 +148,8 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
 
         mNoteAdapter.notifyDataSetChanged();
 
-        if(getSupportActionBar() != null)
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //if(getSupportActionBar() != null)
+        //    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         prepareSelection(position);
     }
@@ -184,10 +184,10 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
         inActionMode = false;
 
         cabSelection.getMenu().clear();
-        cabSelection.inflateMenu(R.menu.menu_main);
+        cabSelection.inflateMenu(R.menu.menu_open_normal);
 
-        if(getSupportActionBar() != null)
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        //if(getSupportActionBar() != null)
+        //    getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
         cabSelection.setTitle(R.string.app_name);
 
