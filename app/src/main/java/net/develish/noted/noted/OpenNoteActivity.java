@@ -13,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,9 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
     private SharedPreferences mPrefs;
     private NoteAdapter mNoteAdapter;
 
+    private RecyclerView mRecyclerView;
+    private LinearLayout mEmptyView;
+
     private Toolbar cabSelection;
 
     private List<Note> current_notes;
@@ -47,6 +51,13 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
 
         mPrefs = getSharedPreferences(DEFAULT_PREFS, Context.MODE_PRIVATE);
         openNote(mPrefs.getString(EXTRA_UUID, null));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        refreshUI();
     }
 
     @Override
@@ -69,6 +80,8 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
 
                     current_notes.remove(note);
                 }
+
+                refreshUI();
 
                 mNoteAdapter.notifyDataSetChanged();
                 clearActionMode();
@@ -115,15 +128,18 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
         getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
 
         // Note list
-        RecyclerView recyclerNotes = findViewById(R.id.recyclerNotes);
-        recyclerNotes.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        recyclerNotes.setLayoutManager(new GridLayoutManager(this, 1));
+        mRecyclerView = findViewById(R.id.recyclerNotes);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        mRecyclerView.setLayoutManager(new GridLayoutManager(this, 1));
+
+        // Empty view
+        mEmptyView = findViewById(R.id.empty_view);
 
         current_notes = new ArrayList<>();
         mNoteAdapter = new NoteAdapter(this, current_notes);
         mNoteAdapter.setClickListener(this);
 
-        recyclerNotes.setAdapter(mNoteAdapter);
+        mRecyclerView.setAdapter(mNoteAdapter);
 
         // New note FAB
         FloatingActionButton fabNew = findViewById(R.id.fabNew);
@@ -133,6 +149,17 @@ public class OpenNoteActivity extends AppCompatActivity implements NoteAdapter.I
                 openNote(null);
             }
         });
+    }
+
+    private void refreshUI() {
+        if(!current_notes.isEmpty()) {
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mEmptyView.setVisibility(View.GONE);
+        }
+        else {
+            mRecyclerView.setVisibility(View.GONE);
+            mEmptyView.setVisibility(View.VISIBLE);
+        }
     }
     /*
         Toolbar / Action mode
